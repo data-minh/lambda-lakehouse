@@ -1,0 +1,7 @@
+websocket-client
+python-dotenv
+pandas
+requests
+pyarrow
+kafka-python
+vnstock

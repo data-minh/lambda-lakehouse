@@ -1,0 +1,103 @@
+services:
+  kafka:
+    image: apache/kafka-native
+    ports:
+      - "9092:9092"
+    environment:
+      # Configure listeners for both docker and host communication
+      KAFKA_LISTENERS: CONTROLLER://localhost:9091,HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT,HOST:PLAINTEXT
+
+      # Settings required for KRaft mode
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9091
+
+      # Listener to use for broker-to-broker communication
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+
+      # Required for a single node cluster
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+          - ./data/kafka:/var/lib/kafka/data
+    networks:
+      - lakehouse-net
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+    environment:
+      DYNAMIC_CONFIG_ENABLED: "true"
+      KAFKA_CLUSTERS_0_NAME: "local-kraft-cluster"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:9093"
+    networks:
+      - lakehouse-net
+
+  nessie:
+    image: ghcr.io/projectnessie/nessie:0.99.0
+    container_name: nessie
+    ports:
+      - "19120:19120"
+    environment:
+      # mount
+      - nessie.version.store.type=ROCKSDB
+      - nessie.version.store.persist.rocks.database-path=/var/lib/nessie/rocksdb
+      # config 
+      - nessie.catalog.default-warehouse=warehouse
+      - nessie.catalog.warehouses.warehouse.location=s3://lakehouse/
+      - nessie.catalog.service.s3.default-options.endpoint=http://minio:9000/
+      - nessie.catalog.service.s3.default-options.external-endpoint=http://172.17.0.1:9000
+      - nessie.catalog.service.s3.default-options.access-key=urn:nessie-secret:quarkus:nessie.catalog.secrets.access-key
+      - nessie.catalog.service.s3.default-options.path-style-access=true
+      - nessie.catalog.service.s3.default-options.auth-type=STATIC
+      - nessie.catalog.secrets.access-key.name=admin
+      - nessie.catalog.secrets.access-key.secret=password
+      - nessie.catalog.service.s3.default-options.region=us-east-1
+      - nessie.server.authentication.enabled=false
+    volumes:
+      - ./data/nessie:/var/lib/nessie/rocksdb
+    networks:
+      - lakehouse-net
+
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password
+      - MINIO_REGION=us-east-1
+    entrypoint: >
+      /bin/sh -c "
+      minio server /data --console-address ':9001' &
+      sleep 10;
+      mc alias set myminio http://localhost:9000 admin password;
+      mc mb myminio/lakehouse --ignore-existing;
+      tail -f /dev/null"
+    volumes:
+      - ./data/minio:/data
+    networks:
+      - lakehouse-net
+
+  trino:
+    image: trinodb/trino
+    container_name: trino
+    networks:
+      - lakehouse-net
+    ports:
+      - 9090:8080
+    volumes:
+      - "./config/nessie.properties:/etc/trino/catalog/lakehouse.properties"
+
+networks:
+  lakehouse-net:
