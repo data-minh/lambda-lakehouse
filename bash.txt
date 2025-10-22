@@ -1,0 +1,24 @@
+spark-submit \
+  --master spark://spark-master:7077 \
+  --deploy-mode client \
+  --conf spark.dynamicAllocation.enabled=false \
+  --conf spark.executor.instances=1 \
+  --conf spark.executor.cores=2 \
+  --conf spark.cores.max=2 \
+  --executor-memory 4g \
+  --driver-memory 1g \
+  --driver-cores 1 \
+  /opt/spark/code/write_iceberg_sample.py
+
+
+spark-submit \
+  --master spark://spark-master:7077 \
+  --deploy-mode cluster \
+  --conf spark.dynamicAllocation.enabled=false \
+  --conf spark.executor.instances=1 \
+  --conf spark.executor.cores=2 \
+  --conf spark.cores.max=2 \
+  --executor-memory 4g \
+  --driver-memory 1g \
+  --driver-cores 1 \
+  /opt/spark/code/write_iceberg_sample.py
