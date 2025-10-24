@@ -93,12 +93,15 @@ x-airflow-common:
 services:
   postgres:
     image: postgres:13
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
+      - ./superset/init-superset-db.sh:/docker-entrypoint-initdb.d/init-superset-db.sh
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 10s
@@ -326,15 +329,15 @@ services:
     networks:
       - lakehouse-net
 
-  # trino:
-  #   image: trinodb/trino
-  #   container_name: trino
-  #   networks:
-  #     - lakehouse-net
-  #   ports:
-  #     - 9090:8080
-  #   volumes:
-  #     - "./config/nessie.properties:/etc/trino/catalog/lakehouse.properties"
+  trino:
+    image: trinodb/trino
+    container_name: trino
+    networks:
+      - lakehouse-net
+    ports:
+      - 9090:8080
+    volumes:
+      - "./config/nessie.properties:/etc/trino/catalog/lakehouse.properties"
 
   spark-master:
     image: spark-image
@@ -393,6 +396,22 @@ services:
       - ./spark/code:/opt/spark/code
     env_file:
       - .env
+    networks:
+      - lakehouse-net
+
+  superset:
+    image: superset-trino
+    container_name: superset
+    volumes:
+      - ./data/superset_home:/app/superset_home
+    environment:
+      - DATABASE_DB=superset
+      - DATABASE_HOST=postgres
+      - DATABASE_PASSWORD=superset
+      - DATABASE_USER=superset
+      - DATABASE_PORT=5432
+    ports:
+      - '8088:8088'
     networks:
       - lakehouse-net
 
