@@ -335,7 +335,7 @@ services:
     networks:
       - lakehouse-net
     ports:
-      - 9090:8080
+      - 7070:8080
     volumes:
       - "./config/nessie.properties:/etc/trino/catalog/lakehouse.properties"
 
