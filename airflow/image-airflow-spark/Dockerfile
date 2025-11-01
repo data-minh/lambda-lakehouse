@@ -1,4 +1,4 @@
-FROM apache/airflow:2.11.0-python3.11
+FROM apache/airflow:2.11.0-python3.10
 
 # Chạy với quyền root để cài đặt hệ thống package
 USER root
@@ -64,8 +64,11 @@ ENV PYSPARK_PYTHON=python \
 # Chuyển về user airflow để cài đặt Python packages
 USER airflow
 
+# ---- Python dependencies --------------------------------------------------
+COPY requirements.txt /tmp/requirements.txt
+RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 # Cài đặt các package Apache Spark cho Airflow
 RUN pip install --no-cache-dir apache-airflow-providers-apache-spark findspark
 
 # Nhắc nhở build image
-# Build lệnh: docker build -t airflow-spark-jars .
+# Build lệnh: docker build -t airflow-spark-jars airflow\image-airflow-spark

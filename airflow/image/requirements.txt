@@ -1,3 +1,8 @@
+# airflow raw
+apache-airflow-providers-apache-spark
+pyspark==3.5.1
+findspark
+# add
 websocket-client
 python-dotenv
 pandas

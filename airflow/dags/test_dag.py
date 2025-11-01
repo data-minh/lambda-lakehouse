@@ -7,7 +7,7 @@ from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOpe
 
 
 with DAG(
-    dag_id="lakehouse-pipeline",
+    dag_id="test-pipeline",
     start_date=pendulum.datetime(2023, 1, 1, tz="UTC"),
     catchup=False,
     schedule=None,
