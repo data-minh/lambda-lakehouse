@@ -47,8 +47,8 @@ spark = (
 def main():
     # load_dotenv()
     # get datedate: t-1
-    # datadate = get_yesterday_string()
-    datadate = '2025-10-24'
+    datadate = get_yesterday_string()
+    # datadate = '2025-10-24'
 
     print(f"Bắt đầu xử lý dữ liệu với ngày {datadate}")
 

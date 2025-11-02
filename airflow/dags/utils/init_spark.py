@@ -1,23 +1,25 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pyspark.sql import SparkSession, functions as F, types as T, DataFrame
 from pyspark.sql.functions import col
 
-def get_yesterday_string(format="%Y-%m-%d"):
-  """
-  Lấy ngày T-1 (ngày hôm qua) và trả về dưới dạng chuỗi
-  theo định dạng được cung cấp.
+def get_yesterday_string(fmt="%Y-%m-%d"):
+    """
+    Lấy ngày T-1 theo UTC. Nếu T-1 rơi vào cuối tuần:
+      - Chủ nhật -> lùi 2 ngày về Thứ sáu
+      - Thứ bảy  -> lùi 1 ngày về Thứ sáu
+    Trả về chuỗi theo định dạng fmt.
+    """
+    # Ngày hôm nay theo UTC (chỉ lấy phần date để tránh vấn đề múi giờ)
+    today_utc = datetime.now(timezone.utc).date()
+    d = today_utc - timedelta(days=1)
 
-  Args:
-    format: Định dạng chuỗi ngày tháng (mặc định là 'YYYY-MM-DD').
-  """
-  # Lấy ngày giờ hiện tại
-  today = datetime.today()
-  
-  # Trừ đi 1 ngày để có ngày hôm qua
-  yesterday = today - timedelta(days=1)
-  
-  # Định dạng ngày hôm qua thành chuỗi và trả về
-  return yesterday.strftime(format)
+    # weekday(): Mon=0 .. Sun=6
+    if d.weekday() == 6:          # Chủ nhật
+        d -= timedelta(days=2)    # -> Thứ sáu
+    elif d.weekday() == 5:        # Thứ bảy
+        d -= timedelta(days=1)    # -> Thứ sáu
+
+    return d.strftime(fmt)
 
 def read_data_from_minio(spark: SparkSession, path: str) -> DataFrame:
     df_raw = (

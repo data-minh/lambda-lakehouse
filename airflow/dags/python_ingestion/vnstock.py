@@ -17,7 +17,7 @@ S3_KEY = os.getenv("AWS_ACCESS_KEY_ID", "admin")
 S3_SECRET = os.getenv("AWS_SECRET_ACCESS_KEY", "password")
 
 S3_BUCKET = "lakehouse"
-S3_PREFIX = "raw/vnstock/vnstock_finally"  # không có slash đầu/cuối
+S3_PREFIX = "raw/stock-data/vnstock/vnstock_finally"  # không có slash đầu/cuối
 
 # Nếu vẫn muốn lưu local khi USE_S3=False
 OUTPUT_DIR = "./stock-data/vnstock/vnstock_finally/"
@@ -40,7 +40,7 @@ def s3_exists(path: str) -> bool:
 
 def s3_read_csv(path: str) -> pd.DataFrame:
     # pandas sẽ tự tạo FS mới qua storage_options mỗi lần -> fork-safe
-    return pd.read_csv(path, storage_options=STORAGE_OPTS)
+    return pd.read_csv(path, storage_options=STORAGE_OPTS, engine='python')
 
 def s3_write_csv(df: pd.DataFrame, path: str, header: bool):
     # Ghi append bằng cách mở lại object mỗi lần

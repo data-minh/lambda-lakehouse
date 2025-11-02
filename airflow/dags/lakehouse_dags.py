@@ -46,7 +46,7 @@ with DAG(
             op_kwargs={
                 "CHUNK_SIZE_DETAIL": 30,
                 "MAX_WORKERS": 1,
-                "PAUSE_TIME_SUCCESS": 20,
+                "PAUSE_TIME_SUCCESS": 60,
                 "PAUSE_TIME_CRASH": 45,
             }
         )

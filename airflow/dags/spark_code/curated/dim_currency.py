@@ -48,8 +48,8 @@ spark = (
 def main():
     # load_dotenv()
     # get datedate: t-1
-    # datadate = get_yesterday_string()
-    datadate = '2025-10-24'
+    datadate = get_yesterday_string()
+    # datadate = '2025-10-24'
 
     print(f"Bắt đầu xử lý dữ liệu với ngày {datadate}")
 
@@ -63,8 +63,6 @@ def main():
         currency_name_data.append((currency.alpha_3, currency.name))
 
     # Thêm 'VND' (vì pycountry không có)
-    currency_name_data.append(("VND", "Vietnamese Dong"))
-
     df_names_lookup = spark.createDataFrame(
         currency_name_data, 
         ["currency_code", "currency_name"]

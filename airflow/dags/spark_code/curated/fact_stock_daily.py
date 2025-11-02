@@ -114,6 +114,7 @@ def main():
     )
 
     fact_equity_daily = fact4.select(
+        F.col("f.date"),
         F.col("f.date_sk"),
         F.col("d.company_sk"),
         F.col("exchange_sk"),
@@ -133,7 +134,7 @@ def main():
         spark=spark,
         df=fact_equity_daily,
         table_name='nessie.curated.fact_equity_daily',
-        partition_cols=['date_sk']
+        partition_cols=['date']
     )
 
     spark.stop()
