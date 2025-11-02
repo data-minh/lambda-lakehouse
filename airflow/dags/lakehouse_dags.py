@@ -9,6 +9,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 from airflow.models import Variable
 from airflow.utils.task_group import TaskGroup
+from airflow.models.param import Param
 
 from python_ingestion.vnstock import vnstock_ingestion
 from python_ingestion.us import us_ingestion
@@ -28,11 +29,19 @@ default_args = {
 
 with DAG(
     dag_id="lakehouse-pipeline",
-    start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
-    schedule=None,
+    start_date=pendulum.datetime(2025, 11, 2, tz="UTC"),
+    schedule="0 1 * * *",  # 01:00 UTC
     catchup=False,
     default_args=default_args,
     tags=["lakehouse"],
+    params={
+        "processing_date": Param(
+            default="",                          # KHÔNG dùng None
+            type="string",
+            pattern=r"^$|^\d{4}-\d{2}-\d{2}$",
+            description="YYYY-MM-DD; để trống nếu muốn dùng ngày UTC hôm nay."
+        )
+    },
 ) as dag:
     
     start = EmptyOperator(task_id="start")

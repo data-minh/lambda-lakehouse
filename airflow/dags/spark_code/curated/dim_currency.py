@@ -1,4 +1,3 @@
-# file: write_iceberg_sample.py
 import os
 import sys
 import platform
@@ -14,7 +13,9 @@ from dags.utils.init_spark import (
                                 format_stg,
                                 write_iceberg_dynamic_partition
                                 )
-import pycountry
+from dags.utils.setup_env import (
+                                get_processing_date
+                                )
 # from dotenv import load_dotenv
 
 NESSIE_URI = os.environ.get("NESSIE_URI") 
@@ -48,7 +49,7 @@ spark = (
 def main():
     # load_dotenv()
     # get datedate: t-1
-    datadate = get_yesterday_string()
+    datadate = get_processing_date()
     # datadate = '2025-10-24'
 
     print(f"Bắt đầu xử lý dữ liệu với ngày {datadate}")

@@ -1,4 +1,3 @@
-# file: write_iceberg_sample.py
 import os
 import sys
 import platform
@@ -13,6 +12,9 @@ from dags.utils.init_spark import (
                                 as_double_clean,
                                 format_stg,
                                 write_iceberg_dynamic_partition
+                                )
+from dags.utils.setup_env import (
+                                get_processing_date
                                 )
 # from dotenv import load_dotenv
 
@@ -47,8 +49,7 @@ spark = (
 def main():
     # load_dotenv()
     # get datedate: t-1
-    # datadate = get_yesterday_string()
-    datadate = '2025-10-24'
+    datadate = get_processing_date()
 
     print(f"Bắt đầu xử lý dữ liệu với ngày {datadate}")
 

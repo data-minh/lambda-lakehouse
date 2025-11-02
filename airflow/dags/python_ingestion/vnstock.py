@@ -4,6 +4,9 @@ import pandas as pd
 from tqdm import tqdm
 from vnstock import Trading, Quote, Listing, Company
 import concurrent.futures
+from dags.utils.setup_env import (
+                                get_processing_date
+                                )
 
 # Dùng fsspec mỗi lần mở S3 thay vì giữ client global (tránh lỗi fork-safe)
 import fsspec
@@ -172,7 +175,7 @@ def vnstock_ingestion(
     data_df = trading.price_board(symbols_list=vnstock_list)['listing']
 
     # 2b) Xác định output path
-    trading_date = data_df['trading_date'].iloc[0]
+    trading_date = get_processing_date()
     if USE_S3:
         output_path = s3_path_for_trading_date(trading_date)
     else:
