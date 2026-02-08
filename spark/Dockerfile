@@ -75,12 +75,15 @@ ENV PYTHONPATH="$SPARK_HOME/python/:${PYTHONPATH}"
 RUN groupadd -r spark && useradd -m -r -g spark -s /bin/bash spark \
  && chown -R spark:spark /opt/spark
 
+# ---- Entrypoint -----------------------------------------------------------
+USER root
+COPY entrypoint.sh /opt/spark/entrypoint.sh
+RUN sed -i 's/\r$//' /opt/spark/entrypoint.sh && \
+    chmod +x /opt/spark/entrypoint.sh && \
+    chown spark:spark /opt/spark/entrypoint.sh
+
 USER spark
 WORKDIR $SPARK_HOME
-
-# ---- Entrypoint -----------------------------------------------------------
-COPY --chown=spark:spark entrypoint.sh .
-RUN chmod +x /opt/spark/entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["bash"]

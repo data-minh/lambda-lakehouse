@@ -46,10 +46,49 @@ def as_double_clean(c):
     return F.regexp_replace(F.col(c).cast("string"), r"[^0-9\.\-]", "").cast(T.DoubleType())
 
 
+def write_iceberg_no_partition(spark: SparkSession, 
+                               df: DataFrame, 
+                               table_name: str, 
+                               mode: str = "overwrite"):
+    """
+    Ghi một DataFrame vào bảng Iceberg KHÔNG phân vùng.
+
+    Args:
+        spark (SparkSession): Spark session đã kích hoạt Iceberg.
+        df (DataFrame): DataFrame đầu vào.
+        table_name (str): Tên bảng (ví dụ: 'nessie.stg.my_table').
+        mode (str): 'overwrite' (ghi đè toàn bộ bảng) hoặc 'append' (ghi thêm).
+    """
+    print(f"Bắt đầu ghi vào bảng KHÔNG partition: {table_name} (Mode: {mode})")
+
+    try:
+        if not spark.catalog.tableExists(table_name):
+            # === TRƯỜNG HỢP 1: TẠO BẢNG MỚI ===
+            print(f"Bảng {table_name} chưa tồn tại. Đang tạo mới...")
+            df.write \
+              .format("iceberg") \
+              .mode("overwrite") \
+              .saveAsTable(table_name)
+        else:
+            # === TRƯỜNG HỢP 2: BẢNG ĐÃ TỒN TẠI ===
+            # Với bảng không partition, dùng writeTo().append() hoặc overwrite()
+            if mode.lower() == "overwrite":
+                print(f"Đang ghi đè toàn bộ dữ liệu bảng {table_name}...")
+                df.writeTo(table_name).overwriteAll()
+            else:
+                print(f"Đang ghi thêm dữ liệu vào bảng {table_name}...")
+                df.writeTo(table_name).append()
+
+        print(f"Ghi dữ liệu vào bảng {table_name} thành công.")
+
+    except Exception as e:
+        print(f"Lỗi khi ghi vào bảng {table_name}: {e}")
+
+
 def write_iceberg_dynamic_partition(spark: SparkSession, 
                                     df: DataFrame, 
                                     table_name: str, 
-                                    partition_cols: list = ["country", "datadate"]):
+                                    partition_cols: list = ["datadate"]):
     """
     Ghi một DataFrame vào bảng Iceberg với cơ chế ghi đè partition động.
 
@@ -63,7 +102,7 @@ def write_iceberg_dynamic_partition(spark: SparkSession,
         table_name (str): Tên của bảng Iceberg (ví dụ: 'catalog.db.my_table').
         partition_cols (list): Danh sách các cột partition. 
                                Thứ tự rất quan trọng.
-                               [ngoài, trong] -> ["country", "datadate"].
+                               [ngoài, trong] -> ["datadate"].
     """
     
     # 1. Kiểm tra xem các cột partition có tồn tại trong DataFrame không
