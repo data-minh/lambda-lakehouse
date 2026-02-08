@@ -60,6 +60,8 @@ x-airflow-common:
   #         cpus: '0.25'
   #         memory: 512M
   # build: .
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
@@ -198,6 +200,8 @@ services:
       airflow-init:
         condition: service_completed_successfully
     # add
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - lakehouse-net
 
@@ -364,6 +368,8 @@ services:
       - ./spark/code:/opt/spark/code
     env_file:
       - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - lakehouse-net
 
@@ -374,8 +380,8 @@ services:
     entrypoint: ["./entrypoint.sh", "worker"]
     restart: unless-stopped
     environment:
-      - SPARK_WORKER_CORES=1
-      - SPARK_WORKER_MEMORY=1g
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=2g
       - SPARK_WORKER_PORT=7078
       - SPARK_WORKER_WEBUI_PORT=8081
     ports:
@@ -384,6 +390,8 @@ services:
       - ./spark/code:/opt/spark/code
     env_file:
       - .env
+    extra_hosts:
+        - "host.docker.internal:host-gateway"
     networks:
       - lakehouse-net
 
@@ -394,8 +402,8 @@ services:
     entrypoint: ["./entrypoint.sh", "worker"]
     restart: unless-stopped
     environment:
-      - SPARK_WORKER_CORES=1
-      - SPARK_WORKER_MEMORY=1g
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=2g
       - SPARK_WORKER_PORT=7079
       - SPARK_WORKER_WEBUI_PORT=8082
     ports:
@@ -404,6 +412,8 @@ services:
       - ./spark/code:/opt/spark/code
     env_file:
       - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - lakehouse-net
 
@@ -438,6 +448,7 @@ services:
       - DATABASE_PASSWORD=superset
       - DATABASE_USER=superset
       - DATABASE_PORT=5432
+      - SUPERSET_SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://superset:superset@postgres:5432/superset
     ports:
       - '8088:8088'
     networks:

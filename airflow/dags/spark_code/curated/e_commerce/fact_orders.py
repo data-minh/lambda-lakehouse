@@ -65,14 +65,14 @@ def get_args():
 # Lấy giá trị datadate
 datadate = get_args()
 
-stg_orders_enriched = spark.sql("select * from nessie.stg.stg_sellers_verified").filter(F.col('datadate')==datadate)
-stg_order_items_clean = spark.sql("select * from nessie.stg.stg_geolocation_unique").filter(F.col('datadate')==datadate)
+stg_orders_enriched = spark.sql("select * from nessie.stg.stg_orders_enriched").filter(F.col('datadate')==datadate)
+stg_order_items_clean = spark.sql("select * from nessie.stg.stg_order_items_clean").filter(F.col('datadate')==datadate)
 
-dim_products = spark.sql("select * from nessie.stg.dim_products")
-dim_sellers = spark.sql("select * from nessie.stg.dim_sellers")
+dim_products = spark.sql("select * from nessie.curated.dim_products")
+dim_sellers = spark.sql("select * from nessie.curated.dim_sellers")
 stg_customers_verified = spark.sql("select * from nessie.stg.stg_customers_verified")
-dim_customers = spark.sql("select * from nessie.stg.dim_customers")
-dim_date = spark.sql("select * from nessie.stg.dim_date")
+dim_customers = spark.sql("select * from nessie.curated.dim_customers")
+dim_date = spark.sql("select * from nessie.curated.dim_date")
 # ==========================================
 # 2. XÂY DỰNG FACT TABLE (BẢNG DỮ KIỆN)
 # ==========================================
@@ -121,8 +121,8 @@ fact_orders = fact_step1.alias("f") \
 
 write_iceberg_no_partition(
     spark=spark,
-    df=dim_sellers,
-    table_name='nessie.curated.dim_sellers'
+    df=fact_orders,
+    table_name='nessie.curated.fact_orders'
 )
 
 spark.stop()
