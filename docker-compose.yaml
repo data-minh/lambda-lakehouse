@@ -417,25 +417,25 @@ services:
     networks:
       - lakehouse-net
 
-  # spark-worker-3:
-  #   image: spark-image
-  #   container_name: spark-worker-3
-  #   depends_on: [spark-master]
-  #   entrypoint: ["./entrypoint.sh", "worker"]
-  #   restart: unless-stopped
-  #   environment:
-  #     - SPARK_WORKER_CORES=1
-  #     - SPARK_WORKER_MEMORY=1g
-  #     - SPARK_WORKER_PORT=7080
-  #     - SPARK_WORKER_WEBUI_PORT=8083
-  #   ports:
-  #     - "8083:8083"   # Worker-3 UI
-  #   volumes:
-  #     - ./spark/code:/opt/spark/code
-  #   env_file:
-  #     - .env
-  #   networks:
-  #     - lakehouse-net
+  spark-worker-3:
+    image: spark-image
+    container_name: spark-worker-3
+    depends_on: [spark-master]
+    entrypoint: ["./entrypoint.sh", "worker"]
+    restart: unless-stopped
+    environment:
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=2g
+      - SPARK_WORKER_PORT=7080
+      - SPARK_WORKER_WEBUI_PORT=8083
+    ports:
+      - "8083:8083"   # Worker-3 UI
+    volumes:
+      - ./spark/code:/opt/spark/code
+    env_file:
+      - .env
+    networks:
+      - lakehouse-net
 
   superset:
     image: superset-trino

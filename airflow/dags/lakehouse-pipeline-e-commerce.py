@@ -35,7 +35,7 @@ SPARK_CURATED_TASKS = [
 with DAG(
     dag_id="lakehouse-pipeline-e-commerce",
     start_date=pendulum.datetime(2026, 2, 7, tz="UTC"),
-    schedule="0 1 * * *",
+    schedule=None,
     catchup=False,
     default_args=default_args,
     tags=["lakehouse"],
